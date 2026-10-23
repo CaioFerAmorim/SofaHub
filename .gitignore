@@ -1,0 +1,17 @@
+# dados pessoais (nunca vão para o GitHub)
+tokens.json
+config.json
+*.log
+*.log.*
+perfil-navegador/
+icones/
+pin.txt
+
+# build
+build/
+dist/
+instalador/Output/
+*.spec
+__pycache__/
+*.pyc
+.venv/

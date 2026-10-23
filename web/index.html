@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SofaHub">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<title>SofaHub</title>
+<style>
+  :root{
+    --bg:#000; --s1:#141414; --s2:#1f1f1f; --s3:#2b2b2b; --line:rgba(255,255,255,.08);
+    --text:#fff; --muted:#b3b3b3; --dim:#808080;
+    --red:#e50914; --red2:#b20710; --green:#46d369;
+    --sans:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --nav-h:72px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; height:100%; background:var(--bg); color:var(--text); font-family:var(--sans);
+    overscroll-behavior:none; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-font-smoothing:antialiased;}
+  body{display:flex; flex-direction:column; padding-top:env(safe-area-inset-top);}
+  button{font:inherit; color:inherit; touch-action:manipulation; cursor:pointer; border:none; background:none; padding:0;}
+  input{font:inherit; -webkit-user-select:text; user-select:text;}
+  svg{display:block; width:24px; height:24px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  svg.fill{fill:currentColor; stroke:none;}
+  .press:active,.pill:active,.round:active,.ctl:active,.hero-btn:active,.k:active{transform:scale(.95); filter:brightness(1.25);}
+  .press,.pill,.round,.ctl,.hero-btn,.k{transition:transform .08s, filter .08s;}
+
+  /* ---------- Cabeçalho ---------- */
+  header{display:flex; align-items:center; gap:12px; padding:12px 18px 6px;}
+  .brand{width:34px; height:34px; border-radius:8px; flex-shrink:0;}
+  .titles{flex:1; min-width:0;}
+  #pageTitle{margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:28px; font-weight:800; letter-spacing:-.02em; line-height:1.05;}
+  #devBtn{display:flex; align-items:center; gap:6px; margin-top:3px; font-size:12.5px; color:var(--muted); max-width:100%;}
+  #devBtn span{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .dot{width:7px; height:7px; border-radius:50%; background:var(--red); flex-shrink:0;}
+  .dot.on{background:var(--green);}
+  .dot.wait{background:#f5a623;}
+  .hicon{width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:50%; color:#fff;}
+  .hicon svg{width:26px; height:26px;}
+
+  /* ---------- Chips ---------- */
+  .chips{display:flex; gap:8px; overflow-x:auto; padding:8px 18px 4px; scrollbar-width:none;}
+  .chips::-webkit-scrollbar{display:none;}
+  .pill{flex-shrink:0; display:flex; align-items:center; gap:6px; height:38px; padding:0 16px; border-radius:99px;
+    background:var(--s2); border:1px solid var(--line); font-size:15px; font-weight:600; white-space:nowrap;}
+  .pill svg{width:18px; height:18px;}
+  .pill.on{background:#fff; color:#000; border-color:#fff;}
+
+  main{flex:1; overflow-y:auto; padding:6px 18px calc(var(--nav-h) + 28px + env(safe-area-inset-bottom));}
+  .view{display:none; animation:entra .18s ease-out;}
+  .view.show{display:block;}
+  @keyframes entra{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
+  h2{font-size:19px; font-weight:700; margin:22px 0 12px; letter-spacing:-.01em;}
+  .hint{color:var(--dim); font-size:13px; line-height:1.45; margin-top:10px;}
+
+  /* ---------- Início: destaque estilo pôster ---------- */
+  .hero{position:relative; margin-top:10px; border-radius:16px; overflow:hidden; border:1px solid var(--line);
+    background:radial-gradient(120% 80% at 50% 28%, #2a0a10 0%, #0d0d10 55%, #000 100%); aspect-ratio:4/5; max-height:62vh; width:100%;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-end; padding:22px 18px 18px;}
+  .hero::after{content:''; position:absolute; inset:0; background:linear-gradient(to bottom, transparent 45%, rgba(0,0,0,.85) 100%); pointer-events:none;}
+  .hero .logo{position:absolute; top:13%; left:50%; transform:translateX(-50%); width:52%; max-width:240px; aspect-ratio:1;
+    filter:drop-shadow(0 18px 40px rgba(229,9,20,.35));}
+  .hero .logo img{width:100%; height:100%; object-fit:contain;}
+  .hero .logo .sigla{width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:84px; font-weight:900; font-style:italic;}
+  .hero .info{position:relative; z-index:1; width:100%; text-align:center;}
+  .hero .nome{font-size:40px; font-weight:900; font-style:italic; letter-spacing:.02em; line-height:1;}
+  .hero .tags{display:flex; justify-content:center; gap:8px; margin:10px 0 16px; font-size:14px; color:#e5e5e5;}
+  .hero .tags b{font-weight:700;}
+  .hero .tags i{font-style:normal; color:var(--dim);}
+  .hero-btn{width:100%; height:48px; border-radius:8px; display:flex; align-items:center; justify-content:center; gap:10px; font-size:18px; font-weight:700;}
+  .hero-btn svg{width:24px; height:24px;}
+  .hero-btn.white{background:#fff; color:#000;}
+  .hero-btn.gray{background:rgba(109,109,110,.55); color:#fff; margin-top:10px; backdrop-filter:blur(8px);}
+
+  .row-apps{display:flex; gap:10px; overflow-x:auto; scrollbar-width:none;}
+  .app{flex-shrink:0; width:112px; aspect-ratio:2/3; border-radius:8px; background:var(--s1); border:1px solid var(--line);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:10px;}
+  .app img{width:62%;}
+  .app b{font-size:26px; font-weight:900; font-style:italic;}
+  .app span{font-size:12.5px; color:var(--muted); font-weight:600;}
+
+  .banner{display:none; gap:10px; align-items:flex-start; background:var(--s2); border-left:3px solid var(--red); border-radius:6px;
+    padding:12px 14px; font-size:13.5px; line-height:1.4; color:#e5e5e5; margin-top:10px;}
+  .banner.show{display:flex;}
+
+  /* ---------- Controle ---------- */
+  .chead{display:flex; align-items:center; gap:12px; margin:8px 0 14px;}
+  .chead .badge{width:44px; height:44px; border-radius:10px; background:var(--s1); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; overflow:hidden; font-weight:900; font-style:italic; font-size:13px;}
+  .chead .badge img{width:80%; height:80%; object-fit:contain;}
+  .chead .t{flex:1; min-width:0;}
+  .chead h3{margin:0; font-size:20px; font-weight:800;}
+  .chead small{color:var(--dim); font-size:12.5px;}
+
+  .search{display:flex; align-items:center; gap:10px; height:50px; padding:0 8px 0 16px; border-radius:12px; background:var(--s3);}
+  .search svg{color:var(--muted); flex-shrink:0;}
+  .search input{flex:1; min-width:0; background:none; border:none; color:#fff; font-size:17px; outline:none;}
+  .search input::placeholder{color:var(--dim);}
+  .search button{height:36px; padding:0 14px; border-radius:8px; background:var(--red); color:#fff; font-weight:700; font-size:15px;}
+
+  .remote{position:relative; width:min(76vw,290px); aspect-ratio:1; margin:22px auto 6px; border-radius:50%;
+    background:radial-gradient(circle at 50% 35%, #262626, #141414 70%); border:1px solid var(--line); box-shadow:0 20px 50px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.06);}
+  .k{position:absolute; display:flex; align-items:center; justify-content:center; color:#e5e5e5;}
+  .k svg{width:30px; height:30px; stroke-width:2.6;}
+  .k.u{top:0; left:30%; width:40%; height:28%;}
+  .k.d{bottom:0; left:30%; width:40%; height:28%;}
+  .k.l{left:0; top:30%; width:28%; height:40%;}
+  .k.r{right:0; top:30%; width:28%; height:40%;}
+  .k.ok{top:31%; left:31%; width:38%; height:38%; border-radius:50%; background:#fff; color:#000; font-size:20px; font-weight:800; letter-spacing:.04em;
+    box-shadow:0 6px 18px rgba(0,0,0,.5);}
+
+  .ctl-row{display:flex; justify-content:space-between; align-items:center; margin-top:20px; padding:0 2px;}
+  .ctl{display:flex; flex-direction:column; align-items:center; gap:6px; color:#fff; font-size:11.5px; font-weight:600; min-width:56px;}
+  .ctl .round{width:52px; height:52px; border-radius:50%; border:2px solid rgba(255,255,255,.85); display:flex; align-items:center; justify-content:center;}
+  .ctl .round svg{width:24px; height:24px;}
+  .ctl.main .round{width:68px; height:68px; background:#fff; color:#000; border:none;}
+  .ctl.main .round svg{width:30px; height:30px;}
+  .ctl span{color:var(--muted);}
+
+  .tools{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:22px;}
+  .tool{height:58px; border-radius:10px; background:var(--s1); border:1px solid var(--line); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; font-size:12px; font-weight:600; color:var(--muted);}
+  .tool svg{width:22px; height:22px; color:#fff;}
+  .tool.press:active{background:var(--s2);}
+
+  .vol{display:flex; align-items:center; gap:10px; margin-top:12px; background:var(--s1); border:1px solid var(--line); border-radius:99px; padding:6px;}
+  .vol button{flex:1; height:44px; border-radius:99px; display:flex; align-items:center; justify-content:center;}
+  .vol button:active{background:var(--s3);}
+  .vol .sep{width:1px; height:24px; background:var(--line);}
+
+  .servers{display:flex; gap:8px; margin-top:4px;}
+  .servers .pill{flex:1; justify-content:center; flex-direction:column; gap:0; height:52px; border-radius:10px; font-size:14px;}
+  .servers .pill small{font-size:11px; color:var(--dim); font-weight:500;}
+
+  /* ---------- Mouse e teclado ---------- */
+  #pad{margin-top:8px; height:36vh; min-height:210px; border-radius:16px; background:var(--s1); border:1px solid var(--line); touch-action:none;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; color:var(--dim); font-size:13px; text-align:center; padding:16px; line-height:1.5;}
+  #pad svg{width:34px; height:34px; color:#3a3a3a;}
+  .mbtns{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:10px;}
+  .mbtns .pill{justify-content:center; height:46px; border-radius:10px;}
+  .speed{display:flex; align-items:center; gap:12px; font-size:13px; color:var(--muted); margin-top:14px;}
+  .speed input{flex:1; accent-color:var(--red);}
+  .kbd{display:flex; align-items:center; gap:10px; height:50px; padding:0 16px; border-radius:12px; background:var(--s3); margin-top:6px;}
+  .kbd svg{color:var(--muted); flex-shrink:0;}
+  .kbd input{flex:1; background:none; border:none; color:#fff; font-size:17px; outline:none;}
+  .kbd input::placeholder{color:var(--dim);}
+  .keys{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:10px;}
+  .keys .pill{justify-content:center; height:44px; border-radius:10px; font-size:14px; padding:0 4px;}
+  .pill.lit{background:#fff; color:#000;}
+
+  /* ---------- Dispositivos ---------- */
+  .dev{display:flex; align-items:center; gap:14px; padding:14px 0; border-bottom:1px solid var(--line);}
+  .dev .ic{width:44px; height:44px; border-radius:10px; background:var(--s2); display:flex; align-items:center; justify-content:center; position:relative;}
+  .dev .ic .dot{position:absolute; right:-2px; bottom:-2px; width:12px; height:12px; border:2px solid #000;}
+  .dev .info{flex:1; min-width:0;}
+  .dev .n{font-weight:700; font-size:16px;}
+  .dev .a{font-size:12.5px; color:var(--dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:2px;}
+  .dev.cur .n{color:#fff;}
+  .dev .x{width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:var(--dim);}
+  .field{display:flex; gap:8px; margin-top:12px;}
+  .text{flex:1; min-width:0; background:var(--s3); border:1px solid transparent; border-radius:10px; padding:13px 14px; color:#fff; font-size:16px; outline:none;}
+  .text:focus{border-color:#fff;}
+  .btn-red{background:var(--red); color:#fff; font-weight:700; border-radius:10px; padding:0 18px; height:48px; font-size:15px;}
+  .btn-red.full{width:100%; margin-top:16px; display:flex; align-items:center; justify-content:center; gap:8px;}
+
+  /* ---------- Barra de abas flutuante ---------- */
+  nav{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(14px + env(safe-area-inset-bottom)); z-index:10;
+    display:flex; gap:4px; padding:6px; border-radius:99px; width:min(92vw,400px); height:var(--nav-h);
+    background:rgba(38,38,38,.72); backdrop-filter:blur(22px) saturate(160%); -webkit-backdrop-filter:blur(22px) saturate(160%);
+    border:1px solid rgba(255,255,255,.08); box-shadow:0 10px 30px rgba(0,0,0,.55);}
+  nav button{flex:1; border-radius:99px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; color:var(--dim); font-size:11.5px; font-weight:600;}
+  nav button svg{width:25px; height:25px;}
+  nav button.active{background:rgba(255,255,255,.12); color:#fff;}
+
+  /* ---------- Modal e aviso ---------- */
+  .modal{position:fixed; inset:0; background:rgba(0,0,0,.75); display:none; align-items:flex-end; justify-content:center; z-index:20;}
+  .modal.show{display:flex;}
+  .sheet{background:var(--s1); width:100%; max-width:480px; border-radius:18px 18px 0 0; padding:20px 20px calc(24px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); animation:sobe .2s ease-out;}
+  @keyframes sobe{from{transform:translateY(40px); opacity:0} to{transform:none; opacity:1}}
+  .sheet .grab{width:40px; height:4px; border-radius:2px; background:#555; margin:0 auto 16px;}
+  .sheet h3{margin:0 0 6px; font-size:22px; font-weight:800;}
+  .sheet p{margin:0; color:var(--muted); font-size:14px; line-height:1.45;}
+  #pinInput{text-align:center; font-size:30px; font-weight:700; letter-spacing:.35em; margin-top:18px; width:100%;}
+  .sheet .acts{display:flex; gap:10px; margin-top:14px;}
+  .sheet .acts button{flex:1; height:48px; border-radius:10px; font-weight:700; font-size:16px;}
+  .sheet .ghost{background:var(--s3);}
+
+  #toast{position:fixed; left:50%; bottom:calc(var(--nav-h) + 30px + env(safe-area-inset-bottom)); transform:translate(-50%,8px); background:#fff; color:#000; font-weight:600; font-size:14px;
+    padding:11px 18px; border-radius:10px; opacity:0; transition:opacity .2s, transform .2s; pointer-events:none; z-index:30; max-width:88vw; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,.5);}
+  #toast.show{opacity:1; transform:translate(-50%,0);}
+</style>
+</head>
+<body>
+
+<!-- Ícones (SVG) -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/></symbol>
+  <symbol id="i-remote" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="3"/><circle cx="12" cy="8.5" r="2.2"/><path d="M10 14h4M10 17h4"/></symbol>
+  <symbol id="i-kbd" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6 10h.01M9.5 10h.01M13 10h.01M16.5 10h.01M7.5 14h9"/></symbol>
+  <symbol id="i-cast" viewBox="0 0 24 24"><path d="M3 8V6a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-6"/><path d="M3 12a7 7 0 0 1 7 7M3 15.5A3.5 3.5 0 0 1 6.5 19M3 19h.01"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.8-4.8"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15a.8.8 0 0 0 1.2.7l12-7.5a.8.8 0 0 0 0-1.4l-12-7.5A.8.8 0 0 0 7 4.5z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-playpause" viewBox="0 0 24 24"><path d="M3.5 5v14l9-7z" fill="currentColor" stroke="none"/><path d="M15.5 5.5v13M20 5.5v13" stroke-width="2.6"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M18 5.5v13L8.5 12z" fill="currentColor" stroke="none"/><path d="M6 5.5v13" stroke-width="2.4"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M6 5.5v13l9.5-6.5z" fill="currentColor" stroke="none"/><path d="M18 5.5v13" stroke-width="2.4"/></symbol>
+  <symbol id="i-back10" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 3.5v3.7h3.7"/><text x="12.3" y="15.3" font-size="7.2" font-weight="800" text-anchor="middle" fill="currentColor" stroke="none" font-family="-apple-system,Segoe UI,sans-serif">10</text></symbol>
+  <symbol id="i-fwd10" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 3.5v3.7h-3.7"/><text x="11.7" y="15.3" font-size="7.2" font-weight="800" text-anchor="middle" fill="currentColor" stroke="none" font-family="-apple-system,Segoe UI,sans-serif">10</text></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+  <symbol id="i-left" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+  <symbol id="i-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+  <symbol id="i-full" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+  <symbol id="i-cursor" viewBox="0 0 24 24"><path d="m5 3 14 7.5-6 1.5-2.8 6z"/></symbol>
+  <symbol id="i-voldown" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 12h5"/></symbol>
+  <symbol id="i-volup" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 12h5M18 9.5v5"/></symbol>
+  <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-tv" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="12.5" rx="2"/><path d="M8 20.5h8"/></symbol>
+  <symbol id="i-touch" viewBox="0 0 24 24"><path d="M9 11V5.5a1.5 1.5 0 0 1 3 0V10m0-1a1.5 1.5 0 0 1 3 0v1m0 0a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-.5a6 6 0 0 1-5-2.7L4.2 15a1.6 1.6 0 0 1 2.6-1.8L9 15.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+</svg>
+
+<header>
+  <img class="brand" src="icon-192.png" alt="">
+  <div class="titles">
+    <h1 id="pageTitle">Início</h1>
+    <button id="devBtn"><i class="dot" id="statusDot"></i><span id="devName">Escolher dispositivo</span></button>
+  </div>
+  <button class="hicon press" id="wakeBtn" title="Acender a tela da TV"><svg><use href="#i-sun"/></svg></button>
+  <button class="hicon press" id="castBtn" title="Dispositivos"><svg><use href="#i-cast"/></svg></button>
+</header>
+
+<main>
+  <!-- DISPOSITIVOS -->
+  <section class="view" id="v-dispositivos">
+    <div id="devList"></div>
+    <button class="btn-red full press" id="scanBtn"><svg><use href="#i-search"/></svg>Buscar na rede</button>
+    <div class="hint" id="scanInfo"></div>
+    <h2>Adicionar pelo endereço</h2>
+    <div class="field">
+      <input class="text" id="manualAddr" placeholder="192.168.0.10:8765" inputmode="url" autocapitalize="off" autocorrect="off">
+      <button class="btn-red press" id="addManual">Adicionar</button>
+    </div>
+  </section>
+
+  <!-- INÍCIO -->
+  <section class="view" id="v-inicio">
+    <div class="banner" id="extAlert">A extensão do Chrome não está conectada. As setas e o player funcionam de forma limitada.</div>
+    <div id="heroWrap"></div>
+    <div id="maisWrap" style="display:none">
+      <h2>Mais apps</h2>
+      <div class="row-apps" id="presetGrid"></div>
+    </div>
+    <div class="chips" style="padding:18px 0 0">
+      <button class="pill press" data-cmd="close"><svg><use href="#i-x"/></svg>Fechar navegador</button>
+      <button class="pill press" data-goto="v-mouse"><svg><use href="#i-touch"/></svg>Touchpad</button>
+    </div>
+  </section>
+
+  <!-- CONTROLE -->
+  <section class="view" id="v-controle">
+    <div class="chead">
+      <div class="badge" id="cBadge"></div>
+      <div class="t"><h3 id="cName">Controle</h3><small>controle remoto</small></div>
+      <button class="pill press" data-site="inicio"><svg><use href="#i-home"/></svg>Início</button>
+    </div>
+
+    <form id="search" class="search">
+      <svg><use href="#i-search"/></svg>
+      <input id="query" placeholder="Buscar filmes e séries" enterkeyhint="search" autocomplete="off" autocorrect="off">
+      <button type="submit" class="press">Buscar</button>
+    </form>
+
+    <div class="remote">
+      <button class="k u" data-site="up" data-rep aria-label="Cima"><svg><use href="#i-up"/></svg></button>
+      <button class="k l" data-site="left" data-rep aria-label="Esquerda"><svg><use href="#i-left"/></svg></button>
+      <button class="k ok" data-site="ok">OK</button>
+      <button class="k r" data-site="right" data-rep aria-label="Direita"><svg><use href="#i-right"/></svg></button>
+      <button class="k d" data-site="down" data-rep aria-label="Baixo"><svg><use href="#i-down"/></svg></button>
+    </div>
+
+    <div class="ctl-row">
+      <button class="ctl" data-site="anterior"><div class="round"><svg><use href="#i-prev"/></svg></div><span>Anterior</span></button>
+      <button class="ctl" data-site="seek" data-arg="-10" data-rep><div class="round"><svg><use href="#i-back10"/></svg></div><span>10s</span></button>
+      <button class="ctl main" data-site="playpause"><div class="round"><svg><use href="#i-playpause"/></svg></div><span>Play</span></button>
+      <button class="ctl" data-site="seek" data-arg="10" data-rep><div class="round"><svg><use href="#i-fwd10"/></svg></div><span>10s</span></button>
+      <button class="ctl" data-site="proximo"><div class="round"><svg><use href="#i-next"/></svg></div><span>Próximo</span></button>
+    </div>
+
+    <div class="vol">
+      <button data-k="voldown" data-rep aria-label="Diminuir volume"><svg><use href="#i-voldown"/></svg></button>
+      <i class="sep"></i>
+      <button data-k="mute" aria-label="Mudo"><svg><use href="#i-mute"/></svg></button>
+      <i class="sep"></i>
+      <button data-k="volup" data-rep aria-label="Aumentar volume"><svg><use href="#i-volup"/></svg></button>
+    </div>
+
+    <div class="tools">
+      <button class="tool press" data-site="voltar"><svg><use href="#i-back"/></svg>Voltar</button>
+      <button class="tool press" data-site="cinema"><svg><use href="#i-full"/></svg>Tela cheia</button>
+      <button class="tool press" id="cursorBtn"><svg><use href="#i-cursor"/></svg>Mouse</button>
+    </div>
+
+    <h2>Servidor</h2>
+    <div class="servers">
+      <button class="pill press" data-site="servidor" data-arg="1">Servidor<small>1</small></button>
+      <button class="pill press" data-site="servidor" data-arg="2">Servidor<small>2</small></button>
+      <button class="pill press" data-site="servidor" data-arg="3">Servidor<small>3</small></button>
+    </div>
+  </section>
+
+  <!-- MOUSE & TECLADO -->
+  <section class="view" id="v-mouse">
+    <div id="pad"><svg><use href="#i-touch"/></svg>Arraste para mover · toque = clique<br>2 dedos = rolar · segurar = clique direito</div>
+    <div class="mbtns">
+      <button class="pill press" id="clickL">Esquerdo</button>
+      <button class="pill press" id="dragBtn">Arrastar</button>
+      <button class="pill press" id="clickR">Direito</button>
+    </div>
+    <label class="speed">Velocidade <input type="range" id="sens" min="0.5" max="4" step="0.1"></label>
+
+    <h2>Teclado</h2>
+    <div class="kbd"><svg><use href="#i-kbd"/></svg><input id="kin" placeholder="Toque e digite no PC" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="enter"></div>
+    <div class="keys">
+      <button class="pill press" data-k="backspace" data-rep>⌫</button>
+      <button class="pill press" data-k="enter">Enter</button>
+      <button class="pill press" data-k="esc">Esc</button>
+      <button class="pill press" data-k="tab">Tab</button>
+      <button class="pill press" data-alttab>Alt+Tab</button>
+      <button class="pill press" data-k="win">Win</button>
+      <button class="pill press" data-k="alt+f4">Alt+F4</button>
+      <button class="pill press" data-k="f11">F11</button>
+      <button class="pill press" data-k="ctrl+c">Ctrl+C</button>
+      <button class="pill press" data-k="ctrl+v">Ctrl+V</button>
+      <button class="pill press" data-k="ctrl+a">Ctrl+A</button>
+      <button class="pill press" data-k="f5">F5</button>
+      <button class="pill press" data-k="capslock" id="capsBtn">Caps Lock</button>
+      <button class="pill press" data-k="space">Espaço</button>
+      <button class="pill press" data-k="delete">Del</button>
+      <!-- Ctrl+Alt+Del de verdade não pode ser simulado (proteção do Windows): abre o Gerenciador de Tarefas -->
+      <button class="pill press" data-k="ctrl+shift+esc" title="Abre o Gerenciador de Tarefas">Ctrl+Alt+Del</button>
+    </div>
+  </section>
+</main>
+
+<nav id="tabs">
+  <button data-tab="v-inicio" class="active"><svg><use href="#i-home"/></svg>Início</button>
+  <button data-tab="v-controle"><svg><use href="#i-remote"/></svg>Controle</button>
+  <button data-tab="v-mouse"><svg><use href="#i-kbd"/></svg>Mouse</button>
+</nav>
+
+<div class="modal" id="pinModal">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h3>Parear com a TV</h3>
+    <p>Digite o PIN do SofaHub. Ele aparece no menu do ícone do SofaHub, nos ícones ocultos da barra de tarefas do notebook.</p>
+    <input class="text" id="pinInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code">
+    <div class="acts">
+      <button class="ghost press" id="pinCancel">Cancelar</button>
+      <button class="btn-red press" id="pinOk">Parear</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
+  const store = {
+    get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch{ return d; } },
+    set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} },
+  };
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+
+  let devices = store.get('devices', []);   // [{base, nome, token}]
+  let current = null, ws = null, retry = null;
+  let presets = [], activePreset = null, extOn = false;
+  let lastView = 'v-inicio';
+
+  function toast(msg){
+    const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  /* ---------------- Telas ---------------- */
+  const TITULOS = { 'v-inicio': 'Início', 'v-controle': 'Controle', 'v-mouse': 'Mouse', 'v-dispositivos': 'Dispositivos' };
+  function show(id){
+    $$('.view').forEach(v => v.classList.toggle('show', v.id === id));
+    $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+    $('#pageTitle').textContent = TITULOS[id] || 'SofaHub';
+    $('main').scrollTop = 0;
+    if (id !== 'v-dispositivos') lastView = id;
+  }
+  $('#tabs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) show(b.dataset.tab); });
+  const abrirDispositivos = () => { renderDevices(); show('v-dispositivos'); };
+  $('#devBtn').addEventListener('click', abrirDispositivos);
+  $('#castBtn').addEventListener('click', abrirDispositivos);
+  $('#wakeBtn').addEventListener('click', () => { if (send({ t: 'ligar' })) toast('Acendendo a tela'); });
+
+  /* ---------------- Dispositivos ---------------- */
+  function normBase(addr){
+    addr = addr.trim().replace(/\/+$/, '');
+    if (!/^https?:\/\//.test(addr)) addr = 'http://' + addr;
+    if (/^http:\/\/[^/:]+$/.test(addr)) addr += ':8765';
+    return addr;
+  }
+  async function getInfo(base, ms = 1500){
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), ms);
+    try{
+      const r = await fetch(base + '/api/info', { signal: ctl.signal, cache: 'no-store' });
+      const j = await r.json();
+      if (j.app !== 'sofahub') throw new Error('não é um SofaHub');
+      return j;
+    } finally { clearTimeout(t); }
+  }
+  function addDevice(base, nome){
+    let d = devices.find(x => x.base === base);
+    if (d) d.nome = nome || d.nome;
+    else { d = { base, nome: nome || base }; devices.push(d); }
+    store.set('devices', devices);
+    return d;
+  }
+  function renderDevices(){
+    const wrap = $('#devList'); wrap.innerHTML = '';
+    if (!devices.length) wrap.innerHTML = '<div class="hint">Nenhum dispositivo ainda. Toque em “Buscar na rede”.</div>';
+    devices.forEach(d => {
+      const el = document.createElement('div');
+      el.className = 'dev' + (d === current ? ' cur' : '');
+      el.innerHTML = `<div class="ic"><svg><use href="#i-tv"/></svg><i class="dot ${d === current && ws && ws.readyState === 1 ? 'on' : ''}"></i></div>
+        <div class="info"><div class="n"></div><div class="a"></div></div>
+        <button class="x" title="Remover"><svg><use href="#i-x"/></svg></button>`;
+      el.querySelector('.n').textContent = d.nome;
+      el.querySelector('.a').textContent = d.base.replace(/^https?:\/\//, '') + (d.token ? ' · pareado' : '');
+      el.querySelector('.info').addEventListener('click', () => connect(d));
+      el.querySelector('.x').addEventListener('click', () => {
+        if (!confirm(`Remover ${d.nome}?`)) return;
+        if (d === current) disconnect();
+        devices = devices.filter(x => x !== d); store.set('devices', devices); renderDevices();
+      });
+      wrap.appendChild(el);
+    });
+  }
+
+  $('#addManual').addEventListener('click', async () => {
+    const v = $('#manualAddr').value; if (!v.trim()) return;
+    const base = normBase(v);
+    try{ const inf = await getInfo(base, 3000); addDevice(base, inf.nome); $('#manualAddr').value = ''; renderDevices(); toast('Adicionado: ' + inf.nome); }
+    catch{ toast('Não encontrei o SofaHub nesse endereço'); }
+  });
+
+  $('#scanBtn').addEventListener('click', async () => {
+    const info = $('#scanInfo');
+    const m = location.hostname.match(/^(\d+\.\d+\.\d+)\.\d+$/);
+    if (!m){ info.textContent = 'Abra o app pelo IP do notebook (http://IP:8765) para buscar na rede.'; return; }
+    const port = location.port || '8765';
+    const ips = Array.from({ length: 254 }, (_, i) => `${m[1]}.${i + 1}`);
+    const btn = $('#scanBtn'); btn.disabled = true;
+    let found = 0, done = 0;
+    info.textContent = `Procurando em ${m[1]}.x ...`;
+    const worker = async () => {
+      while (ips.length){
+        const base = `http://${ips.shift()}:${port}`;
+        try{ const inf = await getInfo(base, 1200); addDevice(base, inf.nome); found++; renderDevices(); }catch{}
+        done++; if (done % 20 === 0) info.textContent = `Procurando... ${done}/254`;
+      }
+    };
+    await Promise.all(Array.from({ length: 32 }, worker));
+    btn.disabled = false;
+    info.textContent = found ? `${found} dispositivo(s) encontrado(s). Toque para conectar.` : 'Nenhum encontrado. O SofaHub está aberto no notebook?';
+  });
+
+  /* ---------------- Pareamento e conexão ---------------- */
+  function askPin(){
+    return new Promise(res => {
+      const m = $('#pinModal'), inp = $('#pinInput');
+      inp.value = ''; m.classList.add('show'); setTimeout(() => inp.focus(), 50);
+      const done = v => { m.classList.remove('show'); $('#pinOk').onclick = $('#pinCancel').onclick = inp.onkeydown = null; res(v); };
+      $('#pinOk').onclick = () => done(inp.value.trim());
+      $('#pinCancel').onclick = () => done(null);
+      inp.onkeydown = e => { if (e.key === 'Enter') done(inp.value.trim()); };
+    });
+  }
+  let pinDoQr = null;   // veio no link do QR code da tela de configuração do notebook
+  async function pair(d){
+    while (true){
+      let pin = pinDoQr; pinDoQr = null;
+      if (!pin) pin = await askPin();
+      if (pin === null) return false;
+      try{
+        const r = await fetch(d.base + '/api/pair', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin, dispositivo: /iPhone/.test(navigator.userAgent) ? 'iPhone' : 'Celular' }) });
+        const j = await r.json();
+        if (r.ok){ d.token = j.token; d.nome = j.nome; store.set('devices', devices); return true; }
+        toast(j.erro || 'Falha no pareamento');
+      }catch{ toast('Sem resposta do dispositivo'); return false; }
+    }
+  }
+  async function tokenOk(d){
+    if (!d.token) return false;
+    try{
+      const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 2500);
+      const r = await fetch(`${d.base}/api/auth`, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: d.token }), cache: 'no-store', signal: ctl.signal });
+      clearTimeout(t); return r.ok;
+    } catch { return null; }   // offline
+  }
+  function setStatus(s){ $('#statusDot').className = 'dot ' + (s === 'on' ? 'on' : s === 'wait' ? 'wait' : ''); }
+
+  function disconnect(){
+    clearTimeout(retry); current = null;
+    if (ws){ ws.onclose = null; ws.close(); ws = null; }
+    setStatus('off'); $('#devName').textContent = 'Escolher dispositivo';
+  }
+  async function connect(d){
+    disconnect(); current = d; store.set('last', d.base);
+    $('#devName').textContent = d.nome; setStatus('wait');
+    const ok = await tokenOk(d);
+    if (current !== d) return;
+    if (ok === null){ toast(`${d.nome} está offline`); scheduleRetry(d); return; }
+    if (!ok){ d.token = null; if (!(await pair(d))){ disconnect(); renderDevices(); return; } }
+    openWs(d);
+  }
+  function scheduleRetry(d){ clearTimeout(retry); retry = setTimeout(() => reconnect(d), 2500); }
+  async function reconnect(d){
+    if (current !== d) return;
+    const ok = await tokenOk(d);
+    if (current !== d) return;
+    if (ok === true) openWs(d);
+    else if (ok === false){ d.token = null; connect(d); }
+    else scheduleRetry(d);
+  }
+  function openWs(d){
+    if (current !== d) return;
+    if (ws){ ws.onclose = null; ws.close(); }
+    ws = new WebSocket(d.base.replace(/^http/, 'ws') + '/ws?token=' + encodeURIComponent(d.token));
+    ws.onopen = () => { setStatus('on'); renderDevices(); if ($('#v-dispositivos').classList.contains('show')) show(lastView); };
+    ws.onclose = () => { setStatus('wait'); scheduleRetry(d); };
+    ws.onmessage = e => {
+      const m = JSON.parse(e.data);
+      if (m.t === 'hello'){
+        presets = m.presets || []; renderPresets(); setExt(m.ext);
+        $('#devName').textContent = d.nome = m.nome; store.set('devices', devices);
+      }
+      else if (m.t === 'ext') setExt(m.on);
+      else if (m.t === 'erro') toast('⚠ ' + m.msg);
+      else if (m.t === 'ok') toast(m.msg);
+    };
+  }
+  function send(o){
+    if (ws && ws.readyState === 1){ ws.send(JSON.stringify(o)); return true; }
+    if (!send.warned){ toast('Sem conexão com o notebook'); send.warned = true; setTimeout(() => send.warned = false, 2000); }
+    return false;
+  }
+  function setExt(on){ extOn = !!on; $('#extAlert').classList.toggle('show', !extOn); }
+
+  /* ---------------- Atalhos (presets) ---------------- */
+  // O 1º atalho vira o destaque (pôster); os demais aparecem em "Mais apps".
+  const marca = p => p.icone
+    ? `<img src="${esc(p.icone)}" alt="">`
+    : `<div class="sigla">${esc(p.sigla || p.nome.slice(0, 3))}</div>`;
+
+  function renderPresets(){
+    const [destaque, ...resto] = presets;
+    const hero = $('#heroWrap');
+    hero.innerHTML = destaque ? `
+      <div class="hero">
+        <div class="logo">${marca(destaque)}</div>
+        <div class="info">
+          <div class="nome">${esc(destaque.nome)}</div>
+          <div class="tags">${(destaque.tags || ['Filmes', 'Séries']).map(t => `<b>${esc(t)}</b>`).join('<i>•</i>')}</div>
+          <button class="hero-btn white" id="heroPlay"><svg><use href="#i-play"/></svg>Abrir na TV</button>
+          <button class="hero-btn gray" id="heroSearch"><svg><use href="#i-search"/></svg>Buscar</button>
+        </div>
+      </div>` : '<div class="hint">Nenhum atalho configurado no presets.json.</div>';
+    if (destaque){
+      $('#heroPlay').onclick = () => openPreset(destaque);
+      $('#heroSearch').onclick = () => { if (openPreset(destaque)) setTimeout(() => $('#query').focus(), 250); };
+    }
+    const g = $('#presetGrid'); g.innerHTML = '';
+    resto.forEach(p => {
+      const b = document.createElement('button');
+      b.className = 'app press';
+      b.innerHTML = `${p.icone ? `<img src="${esc(p.icone)}" alt="">` : `<b>${esc(p.sigla || p.nome.slice(0, 3))}</b>`}<span>${esc(p.nome)}</span>`;
+      b.addEventListener('click', () => openPreset(p));
+      g.appendChild(b);
+    });
+    $('#maisWrap').style.display = resto.length ? '' : 'none';
+    activePreset = (activePreset && presets.find(p => p.id === activePreset.id)) || presets[0] || null;
+    fillHeader();
+  }
+  function fillHeader(){
+    const p = activePreset;
+    $('#cName').textContent = p ? p.nome : 'Controle';
+    $('#cBadge').innerHTML = p ? (p.icone ? `<img src="${esc(p.icone)}" alt="">` : esc(p.sigla || '')) : '';
+  }
+  function openPreset(p){
+    if (!send({ t: 'preset', id: p.id })) return false;
+    activePreset = p; fillHeader(); show('v-controle');
+    return true;
+  }
+  $('#search').addEventListener('submit', e => {
+    e.preventDefault();
+    const q = $('#query').value.trim(); if (!q) return;
+    if (send({ t: 'site', c: 'busca', q, id: activePreset && activePreset.id })){ $('#query').blur(); $('#query').value = ''; toast('Buscando “' + q + '”'); }
+  });
+
+  /* ---------------- Botões (data-k / data-site / data-cmd / data-goto) ---------------- */
+  function acao(b){
+    if (b.dataset.k) return { t: 'key', k: b.dataset.k };
+    if (b.dataset.site){
+      const o = { t: 'site', c: b.dataset.site, id: activePreset && activePreset.id };
+      if (b.dataset.arg) o.s = Number(b.dataset.arg);
+      return o;
+    }
+    return null;
+  }
+  let repT = null, repI = null;
+  function stopRep(){ clearTimeout(repT); clearInterval(repI); repT = repI = null; }
+  document.addEventListener('pointerdown', e => {
+    const b = e.target.closest('[data-rep]'); if (!b) return;
+    const o = acao(b); if (!o) return;
+    send(o); stopRep();
+    repT = setTimeout(() => { repI = setInterval(() => send(o), b.dataset.site === 'seek' ? 350 : 140); }, 420);
+  });
+  ['pointerup', 'pointercancel'].forEach(ev => document.addEventListener(ev, stopRep));
+
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-k], [data-site]');
+    if (b && !b.hasAttribute('data-rep')){ const o = acao(b); if (o) send(o); return; }
+    if (e.target.closest('[data-alttab]')){ send({ t: 'alttab' }); return; }
+    const g = e.target.closest('[data-goto]'); if (g){ show(g.dataset.goto); return; }
+    const c = e.target.closest('[data-cmd]');
+    if (c && c.dataset.cmd === 'close'){ if (send({ t: 'close' })) toast('Navegador fechado'); }
+  });
+
+  // Caps Lock: o botão fica aceso enquanto estiver ligado
+  let caps = false;
+  $('#capsBtn').addEventListener('click', () => { caps = !caps; $('#capsBtn').classList.toggle('lit', caps); });
+
+  $('#cursorBtn').addEventListener('click', () => {
+    if (send({ t: 'site', c: 'cursor', id: activePreset && activePreset.id })){
+      setTimeout(() => send({ t: 'estacionar' }), 250);   // cursor vai para o canto da tela
+    }
+  });
+
+  /* ---------------- Touchpad ---------------- */
+  let qx = 0, qy = 0, raf = 0;
+  function queueMove(dx, dy){ qx += dx; qy += dy; if (!raf) raf = requestAnimationFrame(flush); }
+  function flush(){
+    raf = 0;
+    const ix = Math.trunc(qx), iy = Math.trunc(qy);
+    if (ix || iy){ send({ t: 'move', dx: ix, dy: iy }); qx -= ix; qy -= iy; }
+  }
+  const cfg = Object.assign({ sens: 1.6 }, store.get('mouse', {}));
+  $('#sens').value = cfg.sens;
+  $('#sens').oninput = e => { cfg.sens = +e.target.value; store.set('mouse', cfg); };
+
+  $('#clickL').addEventListener('click', () => send({ t: 'click', b: 'left' }));
+  $('#clickR').addEventListener('click', () => send({ t: 'click', b: 'right' }));
+  let dragging = false;
+  $('#dragBtn').addEventListener('click', () => {
+    dragging = !dragging; send({ t: 'button', b: 'left', down: dragging });
+    $('#dragBtn').classList.toggle('lit', dragging);
+  });
+
+  const pad = $('#pad');
+  const pts = new Map();
+  let t0 = 0, moved = 0, maxPts = 0, longT = null, longFired = false, scrollAcc = 0;
+  pad.addEventListener('pointerdown', e => {
+    pad.setPointerCapture(e.pointerId);
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 1){
+      t0 = performance.now(); moved = 0; maxPts = 1; longFired = false; scrollAcc = 0;
+      clearTimeout(longT);
+      longT = setTimeout(() => { if (moved < 10 && pts.size === 1){ longFired = true; send({ t: 'click', b: 'right' }); } }, 550);
+    } else { maxPts = Math.max(maxPts, pts.size); clearTimeout(longT); }
+  });
+  pad.addEventListener('pointermove', e => {
+    const p = pts.get(e.pointerId); if (!p) return;
+    const dx = e.clientX - p.x, dy = e.clientY - p.y;
+    p.x = e.clientX; p.y = e.clientY;
+    moved += Math.abs(dx) + Math.abs(dy);
+    if (moved > 10) clearTimeout(longT);
+    if (pts.size === 1){
+      const f = cfg.sens * (1 + Math.min(Math.hypot(dx, dy), 40) / 14);   // aceleração
+      queueMove(dx * f, dy * f);
+    } else if (pts.size === 2){
+      scrollAcc += dy / 2;
+      const steps = Math.trunc(scrollAcc / 22);
+      if (steps){ send({ t: 'scroll', dx: 0, dy: steps }); scrollAcc -= steps * 22; }
+    }
+  });
+  const padUp = e => {
+    if (!pts.has(e.pointerId)) return;
+    pts.delete(e.pointerId);
+    if (pts.size) return;
+    clearTimeout(longT);
+    const dt = performance.now() - t0;
+    if (longFired || moved >= 10) return;
+    if (maxPts >= 2 && dt < 350) send({ t: 'click', b: 'right' });
+    else if (dt < 250) send({ t: 'click', b: 'left' });
+  };
+  pad.addEventListener('pointerup', padUp);
+  pad.addEventListener('pointercancel', padUp);
+
+  /* ---------------- Teclado ao vivo ---------------- */
+  // Um espaço "sentinela" no campo garante que o ⌫ do iPhone sempre gere evento.
+  const kin = $('#kin');
+  const resetKin = () => { kin.value = ' '; try{ kin.setSelectionRange(1, 1); }catch{} };
+  kin.addEventListener('focus', resetKin);
+  kin.addEventListener('input', e => {
+    const it = e.inputType;
+    if (it === 'insertText' && e.data) send({ t: 'text', s: e.data });
+    else if (it === 'deleteContentBackward') send({ t: 'key', k: 'backspace' });
+    else if (it === 'insertLineBreak') send({ t: 'key', k: 'enter' });
+    else { const v = kin.value.replace(/^ /, ''); if (v) send({ t: 'text', s: v }); }
+    resetKin();
+  });
+  kin.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); send({ t: 'key', k: 'enter' }); } });
+
+  /* ---------------- Início ---------------- */
+  async function boot(){
+    const qr = location.hash.match(/pin=(\d{4,8})/);
+    if (qr){ pinDoQr = qr[1]; history.replaceState(null, '', location.pathname); }   // o PIN não fica no endereço
+    let aqui = null;
+    try{ const inf = await getInfo(location.origin); aqui = addDevice(location.origin, inf.nome); }catch{}
+    if (qr && aqui){ show('v-inicio'); connect(aqui); return; }
+    pinDoQr = null;
+    const last = devices.find(d => d.base === store.get('last', null)) || (devices.length === 1 ? devices[0] : null);
+    if (last){ show('v-inicio'); connect(last); }
+    else { renderDevices(); show('v-dispositivos'); }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && current && (!ws || ws.readyState > 1)) reconnect(current);
+  });
+  boot();
+})();
+</script>
+</body>
+</html>

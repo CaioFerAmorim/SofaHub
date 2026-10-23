@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="icon-192.png">
+<title>SofaHub — Configuração</title>
+<style>
+  :root{
+    --bg:#000; --s1:#141414; --s2:#1f1f1f; --line:rgba(255,255,255,.09);
+    --text:#fff; --muted:#b3b3b3; --dim:#808080; --red:#e50914; --red2:#b20710; --green:#46d369;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:var(--sans); -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:980px; margin:0 auto; padding:40px 28px 60px;}
+  header{display:flex; align-items:center; gap:16px; margin-bottom:34px;}
+  header img{width:56px; height:56px; border-radius:12px;}
+  h1{margin:0; font-size:34px; font-weight:800; letter-spacing:-.02em;}
+  header p{margin:4px 0 0; color:var(--muted); font-size:15px;}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  @media (max-width:760px){ .grid{grid-template-columns:1fr} }
+  .card{background:var(--s1); border:1px solid var(--line); border-radius:14px; padding:26px;}
+  .card.full{grid-column:1/-1;}
+  .num{display:inline-flex; width:28px; height:28px; border-radius:50%; background:var(--red); align-items:center;
+    justify-content:center; font-weight:800; font-size:14px; margin-right:10px;}
+  h2{display:flex; align-items:center; margin:0 0 6px; font-size:21px; font-weight:700;}
+  .sub{color:var(--muted); font-size:14.5px; line-height:1.5; margin:0 0 18px;}
+  .qr{background:#fff; border-radius:12px; padding:10px; width:max-content; margin:0 auto 18px;}
+  .qr svg{display:block; width:240px; height:240px;}
+  .alt{text-align:center; color:var(--muted); font-size:14px; line-height:1.7;}
+  .alt b{color:#fff; font-size:15px;}
+  .pin{font-size:26px; letter-spacing:.3em; font-weight:800; color:#fff;}
+  .status{display:flex; align-items:center; gap:10px; margin-top:18px; padding:12px 14px; border-radius:10px;
+    background:var(--s2); font-size:14.5px;}
+  .dot{width:9px; height:9px; border-radius:50%; background:var(--red); flex-shrink:0;}
+  .ok .dot{background:var(--green);}
+  ol{margin:0 0 18px; padding-left:20px; color:var(--muted); font-size:14.5px; line-height:1.75;}
+  ol b{color:#fff;}
+  kbd{background:var(--s2); border:1px solid var(--line); border-radius:5px; padding:1px 6px; font-family:inherit; font-size:13px; color:#fff;}
+  button{font:inherit; cursor:pointer; border:none; border-radius:8px; padding:12px 20px; font-weight:700; font-size:15px;
+    background:var(--red); color:#fff;}
+  button:hover{background:var(--red2);}
+  button.sec{background:var(--s2); border:1px solid var(--line);}
+  code{display:block; margin-top:12px; padding:10px 12px; border-radius:8px; background:var(--s2); color:var(--muted);
+    font-size:12.5px; word-break:break-all;}
+  .row{display:flex; align-items:center; justify-content:space-between; gap:16px;}
+  .switch{position:relative; width:52px; height:30px; border-radius:99px; background:#444; padding:0; flex-shrink:0;}
+  .switch::after{content:""; position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:#fff; transition:left .15s;}
+  .switch.on{background:var(--green);} .switch.on::after{left:25px;}
+  .switch:hover{background:#555;} .switch.on:hover{background:var(--green);}
+  .msg{color:var(--muted); font-size:13.5px; margin-top:10px; min-height:1em;}
+  footer{margin-top:28px; color:var(--dim); font-size:13px; line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="icon-192.png" alt="">
+    <div>
+      <h1>Configurar o SofaHub</h1>
+      <p id="sub">Três passos e o celular vira o controle remoto.</p>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="card">
+      <h2><span class="num">1</span>Conecte o celular</h2>
+      <p class="sub">Aponte a câmera do celular para o código e toque no link que aparecer.
+        O celular é lembrado: você só faz isso uma vez.</p>
+      <div class="qr" id="qr"></div>
+      <div class="alt">
+        Ou abra <b id="end">…</b> no navegador do celular<br>e digite o PIN <span class="pin" id="pin">······</span>
+      </div>
+      <div class="status" id="stCel"><span class="dot"></span><span>Aguardando celular…</span></div>
+      <p class="sub" style="margin:14px 0 0">No iPhone, depois de conectar: <b>Compartilhar › Adicionar à Tela de Início</b>.
+        Fica igual a um app.</p>
+    </section>
+
+    <section class="card">
+      <h2><span class="num">2</span>Instale a extensão</h2>
+      <p class="sub">É ela que faz os sites obedecerem às setas do controle e cuida do player e da tela cheia.</p>
+      <ol>
+        <li>Clique no botão abaixo. O Chrome do SofaHub abre na página de extensões.</li>
+        <li>Ative o <b>Modo do desenvolvedor</b> (canto superior direito).</li>
+        <li>Clique em <b>Carregar sem compactação</b>.</li>
+        <li>Na janela que abrir, cole o caminho com <kbd>Ctrl</kbd>+<kbd>V</kbd> no campo <b>Pasta</b> e clique em
+          <b>Selecionar pasta</b>. O botão já copiou o caminho para você.</li>
+      </ol>
+      <button id="btnExt">Abrir extensões do Chrome</button>
+      <div class="msg" id="msgExt"></div>
+      <code id="pasta"></code>
+      <div class="status" id="stExt"><span class="dot"></span><span>Extensão desconectada</span></div>
+    </section>
+
+    <section class="card full">
+      <div class="row">
+        <div>
+          <h2><span class="num">3</span>Iniciar com o Windows</h2>
+          <p class="sub" style="margin:0">O SofaHub fica nos ícones ocultos da barra de tarefas e liga junto com o notebook.</p>
+        </div>
+        <button class="switch" id="sw" aria-label="Iniciar com o Windows"></button>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    Dica: reserve um IP fixo para este notebook no roteador (reserva de DHCP). Assim o atalho do celular nunca perde o endereço.<br>
+    Você pode reabrir esta tela pelo ícone do SofaHub › <b>Configurar / conectar celular</b>.
+  </footer>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  let ultimoPin = '', pareadosAntes = null;
+
+  function status(el, ok, texto){
+    el.classList.toggle('ok', ok);
+    el.lastElementChild.textContent = texto;
+  }
+
+  async function atualizar(){
+    let d;
+    try { d = await (await fetch('/api/local/estado', { cache: 'no-store' })).json(); }
+    catch { $('sub').textContent = 'O SofaHub está fechado. Abra o SofaHub e recarregue esta página.'; return; }
+    $('sub').textContent = `${d.nome} · versão ${d.versao}`;
+    if (d.pin !== ultimoPin){
+      ultimoPin = d.pin;
+      $('qr').innerHTML = d.qr || '';
+      $('qr').style.display = d.qr ? '' : 'none';
+      $('pin').textContent = d.pin;
+    }
+    $('end').textContent = d.endereco;
+    $('pasta').textContent = d.pasta_extensao;
+    if (pareadosAntes === null) pareadosAntes = d.pareados;
+    const novo = d.pareados > pareadosAntes;
+    status($('stCel'), d.pareados > 0,
+      novo ? 'Celular conectado! Pode usar.' :
+      d.pareados ? `${d.pareados} celular${d.pareados > 1 ? 'es' : ''} já conectado${d.pareados > 1 ? 's' : ''}. Para outro, use o código acima.`
+                 : 'Aguardando celular…');
+    status($('stExt'), d.ext, d.ext ? 'Extensão conectada' : 'Extensão desconectada');
+    if (!d.navegador) $('msgExt').textContent = 'Instale o Google Chrome para usar a extensão.';
+    $('sw').classList.toggle('on', d.inicio);
+  }
+
+  async function post(url, corpo){
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(corpo || {}) });
+    return r.json();
+  }
+
+  $('btnExt').onclick = async () => {
+    $('msgExt').textContent = 'Abrindo…';
+    const r = await post('/api/local/extensoes').catch(() => ({ erro: 'SofaHub fechado' }));
+    $('msgExt').textContent = r.ok ? 'Pronto: caminho da pasta copiado. Siga os passos 2 a 4.' : (r.erro || 'Não deu para abrir.');
+  };
+  $('sw').onclick = async () => {
+    const r = await post('/api/local/inicio', { ativo: !$('sw').classList.contains('on') });
+    $('sw').classList.toggle('on', r.inicio);
+  };
+
+  atualizar();
+  setInterval(atualizar, 2500);
+</script>
+</body>
+</html>

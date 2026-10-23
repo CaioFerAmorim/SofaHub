@@ -1,0 +1,5 @@
+aiohttp>=3.9
+pynput>=1.7.7
+pystray>=0.19
+pillow>=10
+segno>=1.6
