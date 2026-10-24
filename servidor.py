@@ -23,7 +23,7 @@ from aiohttp import web, WSMsgType
 import sistema
 from sistema import kb, ms, Key, apertar, botao
 
-VERSAO = "0.7.1"
+VERSAO = "0.7.2"
 log = logging.getLogger("sofahub")
 
 APP_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
@@ -319,7 +319,41 @@ class Servidor:
         return self.ext is not None and not self.ext.closed
 
     def presets(self):
-        return ler_json(PRESETS_FILE, [])
+        lista = ler_json(PRESETS_FILE, [])
+        for p in lista:   # sem ícone próprio: usa o que o SofaHub baixou do site, se já tiver
+            if isinstance(p, dict) and not p.get("icone") and (DATA_DIR / "icones" / self._nome_icone(p)).is_file():
+                p["icone"] = "icones/" + self._nome_icone(p)
+        return lista
+
+    @staticmethod
+    def _nome_icone(p):
+        return "auto-" + re.sub(r"[^a-z0-9_-]", "", str(p.get("id", "")).lower())[:40] + ".png"
+
+    async def _baixar_icones(self):
+        """Baixa (uma vez) o ícone dos atalhos que não têm um. Roda em segundo plano."""
+        import aiohttp
+        import icones
+        faltando = [p for p in ler_json(PRESETS_FILE, []) if isinstance(p, dict) and not p.get("icone")
+                    and p.get("url") and not (DATA_DIR / "icones" / self._nome_icone(p)).is_file()]
+        if not faltando:
+            return
+        await asyncio.sleep(3)   # deixa o PC terminar de ligar a rede
+        novos = 0
+        tempo = aiohttp.ClientTimeout(total=20)
+        async with aiohttp.ClientSession(timeout=tempo) as sessao:
+            for p in faltando:
+                png = await icones.buscar_icone(sessao, p["url"])
+                if png:
+                    destino = DATA_DIR / "icones" / self._nome_icone(p)
+                    tmp = destino.with_suffix(".tmp")
+                    tmp.write_bytes(png)
+                    os.replace(tmp, destino)
+                    novos += 1
+                    log.info("ícone baixado: %s", p.get("nome"))
+                else:
+                    log.info("sem ícone para %s (fica a sigla)", p.get("nome"))
+        if novos:
+            await self.para_celulares(self._hello())
 
     def preset(self, pid):
         for p in self.presets():
@@ -672,6 +706,7 @@ class Servidor:
             self._pronto.set()
             return
         self._pronto.set()
+        self.loop.create_task(self._baixar_icones())
         self.loop.run_forever()
         self.alttab.soltar()
         self.loop.run_until_complete(runner.cleanup())

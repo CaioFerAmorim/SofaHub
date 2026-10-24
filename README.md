@@ -63,7 +63,7 @@ Os atalhos da tela inicial ficam em `%LOCALAPPDATA%\SofaHub\presets.json`
 
 - `busca`: endereço de busca com `{q}` no lugar do texto. Ou use `busca_pagina` (página com um campo
   de busca): a extensão digita o texto sozinha.
-- `icone` (opcional): coloque a imagem `.png`/`.jpg` na pasta `icones` e aponte para ela.
+- `icone` (opcional): sem ele, o SofaHub baixa sozinho o ícone do próprio site na primeira vez. Para usar outro, coloque a imagem `.png`/`.jpg` na pasta `icones` e aponte para ela.
 - Para ajustar a navegação ou o player de um site específico, veja `SITES` em `extensao/content.js`.
 
 ## Segurança
