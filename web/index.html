@@ -361,7 +361,7 @@
   <div class="sheet">
     <div class="grab"></div>
     <h3>Parear com a TV</h3>
-    <p>Digite o PIN do SofaHub. Ele aparece no menu do ícone do SofaHub, nos ícones ocultos da barra de tarefas do notebook.</p>
+    <p>Digite o PIN do SofaHub. Ele aparece no menu do ícone do SofaHub, nos ícones ocultos da barra de tarefas do computador.</p>
     <input class="text" id="pinInput" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code">
     <div class="acts">
       <button class="ghost press" id="pinCancel">Cancelar</button>
@@ -461,7 +461,7 @@
   $('#scanBtn').addEventListener('click', async () => {
     const info = $('#scanInfo');
     const m = location.hostname.match(/^(\d+\.\d+\.\d+)\.\d+$/);
-    if (!m){ info.textContent = 'Abra o app pelo IP do notebook (http://IP:8765) para buscar na rede.'; return; }
+    if (!m){ info.textContent = 'Abra o app pelo IP do computador (http://IP:8765) para buscar na rede.'; return; }
     const port = location.port || '8765';
     const ips = Array.from({ length: 254 }, (_, i) => `${m[1]}.${i + 1}`);
     const btn = $('#scanBtn'); btn.disabled = true;
@@ -476,7 +476,7 @@
     };
     await Promise.all(Array.from({ length: 32 }, worker));
     btn.disabled = false;
-    info.textContent = found ? `${found} dispositivo(s) encontrado(s). Toque para conectar.` : 'Nenhum encontrado. O SofaHub está aberto no notebook?';
+    info.textContent = found ? `${found} dispositivo(s) encontrado(s). Toque para conectar.` : 'Nenhum encontrado. O SofaHub está aberto no computador?';
   });
 
   /* ---------------- Pareamento e conexão ---------------- */
@@ -490,7 +490,7 @@
       inp.onkeydown = e => { if (e.key === 'Enter') done(inp.value.trim()); };
     });
   }
-  let pinDoQr = null;   // veio no link do QR code da tela de configuração do notebook
+  let pinDoQr = null;   // veio no link do QR code da tela de configuração do computador
   async function pair(d){
     while (true){
       let pin = pinDoQr; pinDoQr = null;
@@ -558,7 +558,7 @@
   }
   function send(o){
     if (ws && ws.readyState === 1){ ws.send(JSON.stringify(o)); return true; }
-    if (!send.warned){ toast('Sem conexão com o notebook'); send.warned = true; setTimeout(() => send.warned = false, 2000); }
+    if (!send.warned){ toast('Sem conexão com o computador'); send.warned = true; setTimeout(() => send.warned = false, 2000); }
     return false;
   }
   function setExt(on){ extOn = !!on; $('#extAlert').classList.toggle('show', !extOn); }

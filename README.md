@@ -2,7 +2,7 @@
 
 <h1 align="center">SofaHub</h1>
 
-<p align="center">O notebook ligado na TV vira uma <b>smart TV</b>, e o celular vira o <b>controle remoto</b>.<br>
+<p align="center">O computador ligado na TV vira uma <b>smart TV</b>, e o celular vira o <b>controle remoto</b>.<br>
 Atalhos para os seus sites, setas e OK como numa TV, play/pausa, próximo episódio, busca, mouse e teclado.</p>
 
 <p align="center"><img src="docs/celular.png" width="260" alt="App no celular"></p>
@@ -25,7 +25,7 @@ Para voltar à tela de configuração, clique duas vezes no ícone.
 
 <p align="center"><img src="docs/configurar.png" width="720" alt="Tela de configuração"></p>
 
-> **Dica:** reserve um IP fixo para o notebook no roteador (reserva de DHCP). Assim o atalho do celular
+> **Dica:** reserve um IP fixo para o computador no roteador (reserva de DHCP). Assim o atalho do celular
 > nunca perde o endereço.
 
 Requisitos: Windows 10 ou 11, Google Chrome (ou Edge) e celular na mesma rede Wi-Fi.
