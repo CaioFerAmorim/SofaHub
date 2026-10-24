@@ -9,7 +9,7 @@ python -m pip install -q -r requirements.txt pyinstaller || goto :erro
 echo [2/3] Gerando o SofaHub.exe...
 python -m PyInstaller --noconfirm --clean --windowed --name SofaHub --icon web\icon.ico ^
   --add-data "web;web" --add-data "extensao;extensao" --add-data "presets.json;." ^
-  --hidden-import segno --hidden-import icones sofahub.py || goto :erro
+  --hidden-import segno --hidden-import icones --hidden-import navegadores sofahub.py || goto :erro
 
 for /f "tokens=2 delims==" %%v in ('findstr /b "VERSAO" servidor.py') do set VERSAO=%%~v
 set VERSAO=%VERSAO: =%

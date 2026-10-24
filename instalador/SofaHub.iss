@@ -1,10 +1,10 @@
-; Instalador do SofaHub (Inno Setup 6)
+﻿; Instalador do SofaHub (Inno Setup 6)
 ; Gerado pelo build.bat ou pelo GitHub Actions. Instala só para o usuário atual: não pede administrador.
-; Os dados (PIN, celulares, logins do navegador) ficam em %LOCALAPPDATA%\SofaHub e sobrevivem a
-; atualizações e à desinstalação.
+; Os dados (PIN, celulares, logins do navegador) ficam em %LOCALAPPDATA%\SofaHub: sobrevivem a
+; atualizações, e o desinstalador pergunta se deve apagá-los.
 
 #ifndef AppVersion
-  #define AppVersion "0.7.2"
+  #define AppVersion "0.7.3"
 #endif
 
 [Setup]
@@ -66,4 +66,15 @@ begin
   { fecha o SofaHub antes de atualizar }
   Exec(ExpandConstant('{sys}\taskkill.exe'), '/im SofaHub.exe /f', '', SW_HIDE, ewWaitUntilTerminated, R);
   Result := '';
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  { pergunta se apaga também os dados (PIN, celulares, atalhos, logs, perfil do navegador) }
+  if (CurUninstallStep = usPostUninstall) and (not UninstallSilent) then
+    if MsgBox('Remover também os seus dados do SofaHub?' + #13#10 + #13#10 +
+              'Celulares pareados, atalhos, logs e os logins feitos no navegador do SofaHub.' + #13#10 +
+              'Escolha Não se for reinstalar e quiser manter tudo.',
+              mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES then
+      DelTree(ExpandConstant('{localappdata}\SofaHub'), True, True, True);
 end;

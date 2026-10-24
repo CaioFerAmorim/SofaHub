@@ -68,7 +68,7 @@ def main():
         pystray.MenuItem("Configurar / conectar celular", configurar, default=True),   # também no duplo clique
         pystray.MenuItem(lambda i: f"Celular: {srv.endereco}", None, enabled=False),
         pystray.MenuItem(lambda i: f"PIN de pareamento: {srv.pin}", None, enabled=False),
-        pystray.MenuItem(lambda i: "Extensão do Chrome: " + ("conectada" if srv.ext_on else "desconectada"),
+        pystray.MenuItem(lambda i: "Extensão do navegador: " + ("conectada" if srv.ext_on else "desconectada"),
                          None, enabled=False),
         pystray.Menu.SEPARATOR,
         pystray.MenuItem("Iniciar com o Windows", alternar_inicio,

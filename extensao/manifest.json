@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SofaHub",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Controle remoto pelo celular: navegação por setas, player e tela cheia.",
   "background": {
     "service_worker": "sw-sofahub-060.js"

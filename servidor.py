@@ -20,10 +20,11 @@ from urllib.parse import quote_plus
 
 from aiohttp import web, WSMsgType
 
+import navegadores
 import sistema
 from sistema import kb, ms, Key, apertar, botao
 
-VERSAO = "0.7.2"
+VERSAO = "0.7.3"
 log = logging.getLogger("sofahub")
 
 APP_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
@@ -142,31 +143,47 @@ class Navegador:
     def __init__(self, cfg):
         self.cfg = cfg
         self.proc = None
+        self._cache = None
+
+    def lista(self, atualizar=False):
+        """Navegadores compatíveis instalados (com cache: procurar no disco leva alguns ms)."""
+        if self._cache is None or atualizar:
+            self._cache = navegadores.instalados()
+        return self._cache
+
+    def escolhido(self):
+        """O navegador em uso: o que a pessoa escolheu, senão o padrão do Windows, senão o primeiro achado."""
+        if self.cfg.get("navegador"):   # caminho manual no config.json (avançado)
+            exe = self.cfg["navegador"]
+            return {"id": "manual", "nome": Path(exe).stem.capitalize(), "exe": exe,
+                    "extensoes": "edge://extensions/" if "msedge" in exe.lower() else "chrome://extensions/"}
+        lista = self.lista()
+        por_id = {n["id"]: n for n in lista}
+        for nid in (self.cfg.get("navegador_id"), navegadores.padrao_do_sistema()):
+            if nid in por_id:
+                return por_id[nid]
+        return lista[0] if lista else None
 
     def achar(self):
-        if self.cfg.get("navegador"):
-            return self.cfg["navegador"]
-        bases = [os.environ.get(v) for v in ("PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA")]
-        for rel in ("Google/Chrome/Application/chrome.exe", "Microsoft/Edge/Application/msedge.exe"):
-            for b in filter(None, bases):
-                p = Path(b) / rel
-                if p.exists():
-                    return str(p)
-        for nome in ("google-chrome", "chromium", "chromium-browser", "microsoft-edge"):
-            p = shutil.which(nome)
-            if p:
-                return p
-        return None
+        n = self.escolhido()
+        return n["exe"] if n else None
+
+    def perfil(self):
+        """Perfil separado por navegador (perfis de navegadores diferentes não podem ser misturados)."""
+        n = self.escolhido()
+        if not n or n["id"] in ("chrome", "manual"):
+            return PERFIL_DIR
+        return PERFIL_DIR.with_name(f"{PERFIL_DIR.name}-{n['id']}")
 
     def abrir(self, url):
         if not re.match(r"https?://", url or ""):
             raise ValueError("endereço inválido")
         exe = self.achar()
         if not exe:
-            raise RuntimeError("Chrome/Edge não encontrado — defina 'navegador' no config.json")
+            raise RuntimeError("Nenhum navegador compatível (Chrome, Edge, Vivaldi, Brave ou Opera) encontrado")
         self.proc = subprocess.Popen([
             exe,
-            f"--user-data-dir={PERFIL_DIR}",
+            f"--user-data-dir={self.perfil()}",
             f"--load-extension={EXT_DIR}",   # ignorado no Chrome novo; aí vale a instalação manual
             "--start-fullscreen",
             "--no-first-run",
@@ -180,13 +197,12 @@ class Navegador:
 
     def abrir_extensoes(self):
         """Abre a página de extensões do perfil do SofaHub (para 'Carregar sem compactação')."""
-        exe = self.achar()
-        if not exe:
-            raise RuntimeError("Chrome/Edge não encontrado")
-        pagina = "edge://extensions/" if "msedge" in exe.lower() else "chrome://extensions/"
-        # se o perfil já estiver aberto, o Chrome só abre uma janela nova nele
-        subprocess.Popen([exe, f"--user-data-dir={PERFIL_DIR}", "--no-first-run",
-                                      "--no-default-browser-check", pagina])
+        n = self.escolhido()
+        if not n:
+            raise RuntimeError("Nenhum navegador compatível encontrado")
+        # se o perfil já estiver aberto, o navegador só abre uma janela nova nele
+        subprocess.Popen([n["exe"], f"--user-data-dir={self.perfil()}", "--no-first-run",
+                          "--no-default-browser-check", n["extensoes"]])
 
     def fechar(self):
         if self.proc and self.proc.poll() is None:
@@ -468,6 +484,9 @@ class Servidor:
             "nome": self.cfg["nome"], "versao": VERSAO, "endereco": self.endereco, "pin": self.pin,
             "qr": qr, "pareados": len(self.tokens), "ext": self.ext_on,
             "pasta_extensao": str(EXT_DIR), "navegador": bool(self.nav.achar()),
+            "navegadores": [{"id": n["id"], "nome": n["nome"]} for n in self.nav.lista(atualizar=True)],
+            "navegador_atual": (self.nav.escolhido() or {}).get("id"),
+            "navegador_padrao": navegadores.padrao_do_sistema(),
             "inicio": sistema.inicio_ativo(),
         })
         resp.headers["Cache-Control"] = "no-store"
@@ -482,6 +501,19 @@ class Servidor:
         except Exception as e:
             return web.json_response({"erro": str(e)}, status=500)
         return web.json_response({"ok": True})
+
+    async def h_local_navegador(self, req):
+        if not self._local_ok(req) or req.content_type != "application/json":
+            raise web.HTTPNotFound()
+        nid = (await req.json()).get("id")
+        if nid not in {n["id"] for n in self.nav.lista()}:
+            return web.json_response({"erro": "navegador não encontrado"}, status=400)
+        self.nav.fechar()
+        self.cfg["navegador_id"] = nid
+        self.cfg.pop("navegador", None)
+        salvar_json(CONFIG_FILE, self.cfg)
+        log.info("navegador escolhido: %s", nid)
+        return web.json_response({"ok": True, "navegador_atual": nid})
 
     async def h_local_inicio(self, req):
         if not self._local_ok(req) or req.content_type != "application/json":
@@ -604,7 +636,7 @@ class Servidor:
         # (Sites comuns também conseguem abrir WebSocket para 127.0.0.1, mas o navegador
         #  sempre envia a origem verdadeira deles — https://… — e não dá para falsificar.)
         origem = req.headers.get("Origin", "")
-        if req.remote not in ("127.0.0.1", "::1") or not origem.startswith("chrome-extension://"):
+        if req.remote not in ("127.0.0.1", "::1") or not origem.startswith(("chrome-extension://", "extension://")):
             log.warning("conexão recusada na /ext: %s origem=%r", req.remote, origem[:80])
             raise web.HTTPForbidden()
         ws = web.WebSocketResponse(heartbeat=20, max_msg_size=TAM_MAX_MSG)
@@ -689,6 +721,7 @@ class Servidor:
         app.router.add_get("/api/local/estado", self.h_local_estado)
         app.router.add_post("/api/local/extensoes", self.h_local_extensoes)
         app.router.add_post("/api/local/inicio", self.h_local_inicio)
+        app.router.add_post("/api/local/navegador", self.h_local_navegador)
         app.router.add_get("/", self.h_arquivo)
         app.router.add_get("/{nome}", self.h_arquivo)
         return app

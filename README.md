@@ -16,7 +16,7 @@ Atalhos para os seus sites, setas e OK como numa TV, play/pausa, próximo episó
 2. No fim, a **tela de configuração** abre sozinha:
    - **Celular:** aponte a câmera para o QR code e toque no link. O celular fica pareado para sempre.
      No iPhone: **Compartilhar › Adicionar à Tela de Início**.
-   - **Extensão do Chrome:** clique em *Abrir extensões do Chrome*, ative o **Modo do desenvolvedor**,
+   - **Extensão do navegador:** escolha o navegador (o padrão já vem marcado), clique em *Abrir extensões*, ative o **Modo do desenvolvedor**,
      clique em **Carregar sem compactação** e cole a pasta (o botão já copia o caminho).
 3. Se o Windows perguntar sobre o **Firewall**, permita em **rede privada**.
 
@@ -28,7 +28,7 @@ Para voltar à tela de configuração, clique duas vezes no ícone.
 > **Dica:** reserve um IP fixo para o computador no roteador (reserva de DHCP). Assim o atalho do celular
 > nunca perde o endereço.
 
-Requisitos: Windows 10 ou 11, Google Chrome (ou Edge) e celular na mesma rede Wi-Fi.
+Requisitos: Windows 10 ou 11, um navegador baseado no Chromium (Chrome, Edge, Vivaldi, Brave, Opera ou Opera GX) e celular na mesma rede Wi-Fi. O SofaHub usa o seu navegador padrão e dá para trocar na tela de configuração.
 
 ## Como usar
 
@@ -91,8 +91,8 @@ Achou uma falha? Reporte em particular pela aba **Security › Report a vulnerab
 | Programa | `%LOCALAPPDATA%\Programs\SofaHub` |
 | PIN, celulares, atalhos, logs, perfil do navegador | `%LOCALAPPDATA%\SofaHub` |
 
-Desinstalar pelo Windows (*Configurações › Apps*) mantém os dados. Para apagar tudo, remova também a
-pasta `%LOCALAPPDATA%\SofaHub`.
+Ao desinstalar (*Configurações › Apps*), o SofaHub pergunta se você quer apagar também os dados.
+Se for reinstalar, escolha **Não** e os celulares pareados continuam valendo.
 
 ## Desenvolvimento
 

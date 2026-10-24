@@ -50,6 +50,13 @@
   .caminho code{flex:1; margin:0; background:none;}
   .caminho span{flex-shrink:0; margin-right:8px; padding:6px 12px; border-radius:6px; background:#333; color:#fff; font-size:13px; font-weight:700;}
   .caminho.ok span{background:var(--green); color:#000;}
+  .navlab{font-size:12.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin-bottom:8px;}
+  .navs{display:flex; flex-wrap:wrap; gap:8px;}
+  .navs button{background:var(--s2); border:1px solid var(--line); color:#ddd; padding:9px 14px; font-size:14px; font-weight:600; border-radius:99px;}
+  .navs button:hover{background:#2a2a2a;}
+  .navs button.on{background:#fff; color:#000; border-color:#fff;}
+  .navs small{font-weight:500; opacity:.65; margin-left:4px;}
+  .navnota{color:var(--dim); font-size:13px; line-height:1.5; margin:10px 0 16px; min-height:1em;}
   .row{display:flex; align-items:center; justify-content:space-between; gap:16px;}
   .switch{position:relative; width:52px; height:30px; border-radius:99px; background:#444; padding:0; flex-shrink:0;}
   .switch::after{content:""; position:absolute; top:3px; left:3px; width:24px; height:24px; border-radius:50%; background:#fff; transition:left .15s;}
@@ -86,14 +93,17 @@
     <section class="card">
       <h2><span class="num">2</span>Instale a extensão</h2>
       <p class="sub">É ela que faz os sites obedecerem às setas do controle e cuida do player e da tela cheia.</p>
+      <div class="navlab">Navegador que o SofaHub vai usar</div>
+      <div class="navs" id="navs"></div>
+      <p class="navnota" id="navNota"></p>
       <ol>
-        <li>Clique no botão abaixo. O Chrome do SofaHub abre na página de extensões.</li>
+        <li>Clique no botão abaixo. O <b class="navNome">navegador</b> abre na página de extensões, num perfil só do SofaHub.</li>
         <li>Ative o <b>Modo do desenvolvedor</b> (canto superior direito).</li>
         <li>Clique em <b>Carregar sem compactação</b>.</li>
         <li>Na janela que abrir, cole o caminho com <kbd>Ctrl</kbd>+<kbd>V</kbd> no campo <b>Pasta</b> e clique em
           <b>Selecionar pasta</b>. O botão já copia o caminho, ou clique nele abaixo.</li>
       </ol>
-      <button id="btnExt">Abrir extensões do Chrome</button>
+      <button id="btnExt">Abrir extensões do <span class="navNome">navegador</span></button>
       <div class="msg" id="msgExt"></div>
       <button class="caminho" id="caminho" title="Clique para copiar">
         <code id="pasta"></code><span id="copiarTxt">Copiar</span>
@@ -147,8 +157,34 @@
       d.pareados ? `${d.pareados} celular${d.pareados > 1 ? 'es' : ''} já conectado${d.pareados > 1 ? 's' : ''}. Para outro, use o código acima.`
                  : 'Aguardando celular…');
     status($('stExt'), d.ext, d.ext ? 'Extensão conectada' : 'Extensão desconectada');
-    if (!d.navegador) $('msgExt').textContent = 'Instale o Google Chrome para usar a extensão.';
+    if (!d.navegador) $('msgExt').textContent = 'Instale um navegador compatível: Chrome, Edge, Vivaldi, Brave ou Opera.';
+    navs(d);
     $('sw').classList.toggle('on', d.inicio);
+  }
+
+  let navsChave = '';
+  function navs(d){
+    const chave = JSON.stringify([d.navegadores, d.navegador_atual, d.navegador_padrao]);
+    if (chave === navsChave) return;
+    navsChave = chave;
+    const box = $('navs'); box.innerHTML = '';
+    for (const n of d.navegadores){
+      const b = document.createElement('button');
+      b.className = n.id === d.navegador_atual ? 'on' : '';
+      b.textContent = n.nome;
+      if (n.id === d.navegador_padrao){ const s = document.createElement('small'); s.textContent = '· padrão'; b.appendChild(s); }
+      b.onclick = async () => {
+        const r = await post('/api/local/navegador', { id: n.id });
+        if (r.ok){ navsChave = ''; atualizar(); }
+      };
+      box.appendChild(b);
+    }
+    const atual = d.navegadores.find(n => n.id === d.navegador_atual);
+    document.querySelectorAll('.navNome').forEach(e => e.textContent = atual ? atual.nome : 'navegador');
+    $('navNota').textContent = d.navegadores.length
+      ? (d.navegador_padrao && d.navegador_padrao === d.navegador_atual ? 'Escolhemos o seu navegador padrão. ' : '') +
+        'Firefox e Safari não são compatíveis com a extensão.'
+      : 'Nenhum navegador compatível encontrado.';
   }
 
   async function post(url, corpo){
