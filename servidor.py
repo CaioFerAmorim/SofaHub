@@ -23,7 +23,7 @@ from aiohttp import web, WSMsgType
 import sistema
 from sistema import kb, ms, Key, apertar, botao
 
-VERSAO = "0.7.0"
+VERSAO = "0.7.1"
 log = logging.getLogger("sofahub")
 
 APP_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))

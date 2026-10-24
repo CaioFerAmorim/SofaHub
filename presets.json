@@ -1,12 +1,30 @@
 [
   {
+    "id": "etv",
+    "nome": "ETV",
+    "sigla": "ETV",
+    "cor": "#000000",
+    "url": "https://encontrei.me/",
+    "busca_pagina": "https://encontrei.me/buscar/",
+    "icone": "etv.png",
+    "tags": [
+      "Filmes",
+      "Séries",
+      "Dublado"
+    ]
+  },
+  {
     "id": "youtube",
     "nome": "YouTube",
     "sigla": "YT",
     "cor": "#ff0000",
     "url": "https://www.youtube.com/",
     "busca": "https://www.youtube.com/results?search_query={q}",
-    "tags": ["Vídeos", "Música", "Ao vivo"]
+    "tags": [
+      "Vídeos",
+      "Música",
+      "Ao vivo"
+    ]
   },
   {
     "id": "netflix",
@@ -15,7 +33,10 @@
     "cor": "#e50914",
     "url": "https://www.netflix.com/browse",
     "busca": "https://www.netflix.com/search?q={q}",
-    "tags": ["Filmes", "Séries"]
+    "tags": [
+      "Filmes",
+      "Séries"
+    ]
   },
   {
     "id": "prime",
@@ -24,6 +45,9 @@
     "cor": "#1399ff",
     "url": "https://www.primevideo.com/",
     "busca": "https://www.primevideo.com/search/?phrase={q}",
-    "tags": ["Filmes", "Séries"]
+    "tags": [
+      "Filmes",
+      "Séries"
+    ]
   }
 ]

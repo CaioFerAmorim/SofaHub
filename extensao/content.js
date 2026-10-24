@@ -11,12 +11,12 @@
   //  servidor → servidor de vídeo preferido, clicado automaticamente
   //  inicio   → onde a primeira seta cai em cada tipo de página
   const SITES = {
-    // 'exemplo.com': {
-    //   player: /^\/(episodios|filmes)\//,   // caminho das páginas que têm o player
-    //   servidor: /^\s*1\b/i,                 // texto do botão do servidor de vídeo preferido
-    //   reserva: [2, 3],                       // servidores para tentar se o preferido não carregar
-    //   inicio: [{ caminho: /^\/series\//, texto: /^\s*temporada/i }],
-    // },
+    'encontrei.me': {
+      player: /^\/(episodios|filmes)\//,
+      servidor: /^\s*(1\.?\s*)?byse\b/i,
+      reserva: [],   // servidores para tentar se o preferido não carregar (ex.: [2, 3])
+      inicio: [{ caminho: /^\/series\//, texto: /^\s*temporada/i }],
+    },
   };
   const SITE = SITES[HOST] || {};
 

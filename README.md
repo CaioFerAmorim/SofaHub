@@ -43,6 +43,8 @@ Requisitos: Windows 10 ou 11, Google Chrome (ou Edge) e celular na mesma rede Wi
 
 ## Personalizar os atalhos
 
+Já vem com **ETV**, **YouTube**, **Netflix** e **Prime Video**. No ETV, o servidor Byse é escolhido sozinho ao abrir um episódio.
+
 Os atalhos da tela inicial ficam em `%LOCALAPPDATA%\SofaHub\presets.json`
 (ícone do SofaHub › *Abrir pasta do SofaHub*). Exemplo:
 
